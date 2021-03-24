@@ -1,7 +1,7 @@
 import { store } from './app.js';
 import { addTodo, removeTodo, toggleTodo, addGoal, removeGoal } from './actionCreators.js';
 
-// Helpers
+// ID Helper
 const generateId = () => Math.random().toString(36).substring(2) + new Date().getTime().toString(36);
 // DOM Helper
 const createRemoveBtn = (onClick) => {

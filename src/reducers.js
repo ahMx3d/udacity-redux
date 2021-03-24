@@ -7,7 +7,7 @@ export const app = (state = {}, action) => {
 };
 
 // Todos Reducer Function
-const todos = (state = [], action) => {
+export const todos = (state = [], action) => {
 	switch (action.type) {
 		case 'ADD_TODO':
 			return state.concat([ action.todo ]);
@@ -23,7 +23,7 @@ const todos = (state = [], action) => {
 };
 
 // Goals Reducer Function
-const goals = (state = [], action) => {
+export const goals = (state = [], action) => {
 	switch (action.type) {
 		case 'ADD_GOAL':
 			return state.concat([ action.goal ]);
