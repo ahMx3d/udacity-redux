@@ -23,6 +23,7 @@ export const checker = (store) => (next) => (action) => {
 export const logger = (store) => (next) => (action) => {
 	console.group(action.type);
 	console.log('Action: ', action);
+    // Hits dispatch in case there is no middleware after the current one
 	const result = next(action);
 	console.log('New State: ', store.getState());
 	console.groupEnd();
