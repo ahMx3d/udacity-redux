@@ -1,6 +1,8 @@
 import { store } from './app.js';
 import { addTodo, removeTodo, toggleTodo, addGoal, removeGoal } from './actionCreators.js';
-import { checkAndDispatch } from "./middlewares.js";
+
+// this was to replace "store.dispatch(action)" with "checkAndDispatch(store,action)"
+// import { checkAndDispatch } from "./middlewares.js"; 
 
 // ID Helper
 const generateId = () => Math.random().toString(36).substring(2) + new Date().getTime().toString(36);
@@ -18,7 +20,7 @@ export const addTodoToStore = () => {
 		name = input.value;
 	input.value = '';
 
-	checkAndDispatch(store,
+	store.dispatch(
 		addTodo({
 			id: generateId(),
 			name,
@@ -32,7 +34,7 @@ export const addGoalToStore = () => {
 		name = input.value;
 	input.value = '';
 
-	checkAndDispatch(store,
+	store.dispatch(
 		addGoal({
 			id: generateId(),
 			name
@@ -44,14 +46,14 @@ export const addTodoToDOM = (todo) => {
 	const node = document.createElement('li'),
 		text = document.createTextNode(todo.name),
 		removeBtn = createRemoveBtn(() => {
-			checkAndDispatch(store,removeTodo(todo.id));
+			store.dispatch(removeTodo(todo.id));
 		});
 	node.appendChild(text);
 	node.appendChild(removeBtn);
 
 	node.style.textDecoration = todo.complete ? 'line-through' : 'none';
 	node.addEventListener('click', () => {
-		checkAndDispatch(store,toggleTodo(todo.id));
+		store.dispatch(toggleTodo(todo.id));
 	});
 
 	document.getElementById('todos').appendChild(node);
@@ -61,7 +63,7 @@ export const addGoalToDOM = (goal) => {
 	const node = document.createElement('li'),
 		text = document.createTextNode(goal.name),
 		removeBtn = createRemoveBtn(() => {
-			checkAndDispatch(store,removeGoal(goal.id));
+			store.dispatch(removeGoal(goal.id));
 		});
 	node.appendChild(text);
 	node.appendChild(removeBtn);
