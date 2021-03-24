@@ -2,15 +2,35 @@
 <html>
 
 <head>
-	<title>Udacity Redux</title>
+	<title>Native Redux App</title>
 	<meta charset="UTF-8" />
+	<style>
+		#app {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-around;
+			align-items: baseline;
+		}
+	</style>
 </head>
 
 <body>
-	<div id="app"></div>
+	<div id="app">
+		<div>
+			<h1>Todos List</h1>
+			<input type="text" placeholder="New Todo" id="todo" />
+			<button id="todo-btn">Add</button>
+			<ul id="todos"></ul>
+		</div>
+		<div>
+			<h1>Goals List</h1>
+			<input type="text" placeholder="New Goal" id="goal" />
+			<button id="goal-btn">Add</button>
+			<ul id="goals"></ul>
+		</div>
+	</div>
 
-	<script type="module" src="src/index.js">
-	</script>
+	<script type="module" src="src/index.js"></script>
 </body>
 
 </html>
