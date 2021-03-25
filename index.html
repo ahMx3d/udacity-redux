@@ -160,22 +160,29 @@
 		class Todos extends React.Component {
 			addItem = (e) => {
 				e.preventDefault();
-				const name = this.input.value;
-				this.input.value = ''
 
-				this.props.store.dispatch(
-					addTodo({
-						id: generateId(),
-						name,
-						complete: false
+				return API.saveTodo(this.input.value)
+					.then((todo) => {
+						this.props.store.dispatch(addTodo(todo))
+						this.input.value = ''
 					})
-				);
+					.catch(() => alert('An Error Occurred, Try Again Later'))
 			};
 			removeItem = (todo) => {
 				this.props.store.dispatch(removeTodo(todo.id))
+				return API.deleteTodo(todo.id)
+					.catch(() => {
+						this.props.store.dispatch(addTodo(todo))
+						alert('An Error Occurred, Try Again Later')
+					})
 			}
 			toggleItem = (todo) => {
 				this.props.store.dispatch(toggleTodo(todo.id))
+				return API.saveTodoToggle(todo.id)
+					.catch(() => {
+						this.props.store.dispatch(toggleTodo(todo.id))
+						alert('An Error Occurred, Try Again Later')
+					})
 			}
 
 			render() {
@@ -192,17 +199,22 @@
 		class Goals extends React.Component {
 			addItem = (e) => {
 				e.preventDefault()
-				const name = this.input.value
-				this.input.value = ''
 
-				this.props.store.dispatch(addGoal({
-					id: generateId(),
-					name
-				}))
+				return API.saveGoal(this.input.value)
+					.then((goal) => {
+						this.props.store.dispatch(addGoal(goal))
+						this.input.value = ''
+					})
+					.catch(() => alert('An Error Occurred, Try Again Later'))
 			}
 
 			removeItem = (goal) => {
 				this.props.store.dispatch(removeGoal(goal.id))
+				return API.deleteGoal(goal.id)
+					.catch(() => {
+						this.props.store.dispatch(addGoal(goal))
+						alert('An Error Occurred, Try Again Later')
+					})
 			}
 
 			render() {
@@ -249,7 +261,7 @@
 			render() {
 				const { store } = this.props;
 				const { todos, goals, loading } = store.getState();
-				return loading? <h3>Loading...</h3>: (
+				return loading ? <h3>Loading...</h3> : (
 					<React.Fragment>
 						<Todos todos={todos} store={this.props.store} />
 						<Goals goals={goals} store={this.props.store} />
