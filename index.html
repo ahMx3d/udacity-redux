@@ -42,6 +42,8 @@
 	<script src="https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js" crossorigin></script>
 	<!-- Babel -->
 	<script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js" crossorigin></script>
+	<!-- API -->
+	<script src="https://tylermcginnis.com/goals-todos-api/index.js"></script>
 
 	<script type="module" src="src/index.js"></script>
 
@@ -53,8 +55,14 @@
 			REMOVE_TODO = 'REMOVE_TODO',
 			TOGGLE_TODO = 'TOGGLE_TODO',
 			ADD_GOAL = 'ADD_GOAL',
+			RECEIVE_DATA = 'RECEIVE_DATA',
 			REMOVE_GOAL = 'REMOVE_GOAL';
 
+		const receiveData = (todos, goals) => ({
+			type: RECEIVE_DATA,
+			todos,
+			goals,
+		});
 		const addTodo = (todo) => ({
 			type: ADD_TODO,
 			todo
@@ -80,14 +88,16 @@
 		// Todos Reducer Function
 		const todos = (state = [], action) => {
 			switch (action.type) {
-				case 'ADD_TODO':
+				case ADD_TODO:
 					return state.concat([action.todo]);
-				case 'REMOVE_TODO':
+				case REMOVE_TODO:
 					return state.filter((todo) => todo.id !== action.id);
-				case 'TOGGLE_TODO':
+				case TOGGLE_TODO:
 					return state.map(
 						(todo) => (todo.id !== action.id ? todo : Object.assign({}, todo, { complete: !todo.complete }))
 					);
+				case RECEIVE_DATA:
+					return action.todos;
 				default:
 					return state;
 			}
@@ -96,14 +106,26 @@
 		// Goals Reducer Function
 		const goals = (state = [], action) => {
 			switch (action.type) {
-				case 'ADD_GOAL':
+				case RECEIVE_DATA:
+					return action.goals;
+				case ADD_GOAL:
 					return state.concat([action.goal]);
-				case 'REMOVE_GOAL':
+				case REMOVE_GOAL:
 					return state.filter((goal) => goal.id !== action.id);
 				default:
 					return state;
 			}
 		};
+
+		// Loading Reducer Function
+		const loading = (state = true, action) => {
+			switch (action.type) {
+				case RECEIVE_DATA:
+					return false;
+				default:
+					return state;
+			}
+		}
 
 		const checker = (store) => (next) => (action) => {
 			if (action.type === ADD_TODO && action.todo.name.toLowerCase().includes('bitcoin')) {
@@ -128,7 +150,8 @@
 		const store = Redux.createStore(
 			Redux.combineReducers({
 				todos,
-				goals
+				goals,
+				loading,
 			}),
 			Redux.applyMiddleware(checker, logger)
 		);
@@ -199,7 +222,7 @@
 				<ul>
 					{props.items.map(item => (
 						<li key={item.id}>
-							<span style={{ textDecoration: item.complete? 'line-through': 'none' }} onClick={()=>props.toggle && props.toggle(item)}>{item.name}</span>
+							<span style={{ textDecoration: item.complete ? 'line-through' : 'none' }} onClick={() => props.toggle && props.toggle(item)}>{item.name}</span>
 							<button onClick={() => props.remove(item)}>X</button>
 						</li>
 					))}
@@ -211,12 +234,22 @@
 			componentDidMount() {
 				const { store } = this.props;
 
+				// Fetch Data From Remote API
+				Promise.all([
+					API.fetchTodos(),
+					API.fetchGoals(),
+				]).then(([todos, goals]) => {
+					console.log('todos', todos);
+					console.log('goals', goals);
+					store.dispatch(receiveData(todos, goals))
+				})
+
 				store.subscribe(() => this.forceUpdate());
 			}
 			render() {
 				const { store } = this.props;
-				const { todos, goals } = store.getState();
-				return (
+				const { todos, goals, loading } = store.getState();
+				return loading? <h3>Loading...</h3>: (
 					<React.Fragment>
 						<Todos todos={todos} store={this.props.store} />
 						<Goals goals={goals} store={this.props.store} />
