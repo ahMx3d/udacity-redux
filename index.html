@@ -44,6 +44,8 @@
 	<script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js" crossorigin></script>
 	<!-- API -->
 	<script src="https://tylermcginnis.com/goals-todos-api/index.js"></script>
+	<!-- Redux Thunk -->
+	<script src="https://unpkg.com/redux-thunk@2.2.0/dist/redux-thunk.min.js"></script>
 
 	<script type="module" src="src/index.js"></script>
 
@@ -58,6 +60,17 @@
 			RECEIVE_DATA = 'RECEIVE_DATA',
 			REMOVE_GOAL = 'REMOVE_GOAL';
 
+		// Action Creators
+		const handleDeleteTodo = (todo) => {
+			return (dispatch) => {
+				dispatch(removeTodo(todo.id))
+				return API.deleteTodo(todo.id)
+					.catch(() => {
+						dispatch(addTodo(todo))
+						alert('An Error Occurred, Try Again Later')
+					})
+			}
+		}
 		const receiveData = (todos, goals) => ({
 			type: RECEIVE_DATA,
 			todos,
@@ -127,6 +140,7 @@
 			}
 		}
 
+		// Middlewares
 		const checker = (store) => (next) => (action) => {
 			if (action.type === ADD_TODO && action.todo.name.toLowerCase().includes('bitcoin')) {
 				return alert("Nope, That's a bad idea");
@@ -147,13 +161,21 @@
 			return result;
 		};
 
+		// Redux Thunk Applied Manually
+		// const thunk = (store) => (next) => (action) => {
+		// 	if (typeof action === 'function') {
+		// 		return action(store.dispatch)
+		// 	}
+		// 	return next(action)
+		// }
+
 		const store = Redux.createStore(
 			Redux.combineReducers({
 				todos,
 				goals,
 				loading,
 			}),
-			Redux.applyMiddleware(checker, logger)
+			Redux.applyMiddleware(ReduxThunk.default, checker, logger)
 		);
 	</script>
 	<script type="text/babel">
@@ -169,12 +191,7 @@
 					.catch(() => alert('An Error Occurred, Try Again Later'))
 			};
 			removeItem = (todo) => {
-				this.props.store.dispatch(removeTodo(todo.id))
-				return API.deleteTodo(todo.id)
-					.catch(() => {
-						this.props.store.dispatch(addTodo(todo))
-						alert('An Error Occurred, Try Again Later')
-					})
+				this.props.store.dispatch(handleDeleteTodo(todo))
 			}
 			toggleItem = (todo) => {
 				this.props.store.dispatch(toggleTodo(todo.id))
