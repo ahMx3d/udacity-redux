@@ -60,7 +60,54 @@
 			RECEIVE_DATA = 'RECEIVE_DATA',
 			REMOVE_GOAL = 'REMOVE_GOAL';
 
-		// Action Creators
+		// thunkifiable Action Creators
+
+		const handleInitialData = () => {
+			return (dispatch) => {
+
+				// Fetch Data From Remote API
+				return Promise.all([
+					API.fetchTodos(),
+					API.fetchGoals(),
+				]).then(([todos, goals]) => {
+					// console.log('todos', todos);
+					// console.log('goals', goals);
+					dispatch(receiveData(todos, goals))
+				})
+			}
+		}
+
+		const handleRemoveGoal = (goal) => {
+			return (dispatch) => {
+				dispatch(removeGoal(goal.id))
+				return API.deleteGoal(goal.id)
+					.catch(() => {
+						dispatch(addGoal(goal))
+						alert('An Error Occurred, Try Again Later')
+					})
+			}
+		}
+		const handleAddGoal = (name, closure) => {
+			return (dispatch) => {
+				return API.saveGoal(name)
+					.then((goal) => {
+						dispatch(addGoal(goal))
+						closure()
+					})
+					.catch(() => alert('An Error Occurred, Try Again Later'))
+			}
+		}
+
+		const handleAddTodo = (name, closure) => {
+			return (dispatch) => {
+				return API.saveTodo(name)
+					.then((todo) => {
+						dispatch(addTodo(todo))
+						closure()
+					})
+					.catch(() => alert('An Error Occurred, Try Again Later'))
+			}
+		}
 		const handleDeleteTodo = (todo) => {
 			return (dispatch) => {
 				dispatch(removeTodo(todo.id))
@@ -71,6 +118,18 @@
 					})
 			}
 		}
+		const handleToggleTodo = (id) => {
+			return (dispatch) => {
+				dispatch(toggleTodo(id))
+				return API.saveTodoToggle(id)
+					.catch(() => {
+						dispatch(toggleTodo(id))
+						alert('An Error Occurred, Try Again Later')
+					})
+			}
+		}
+
+		// Action Creators
 		const receiveData = (todos, goals) => ({
 			type: RECEIVE_DATA,
 			todos,
@@ -183,23 +242,16 @@
 			addItem = (e) => {
 				e.preventDefault();
 
-				return API.saveTodo(this.input.value)
-					.then((todo) => {
-						this.props.store.dispatch(addTodo(todo))
-						this.input.value = ''
-					})
-					.catch(() => alert('An Error Occurred, Try Again Later'))
+				this.props.store.dispatch(handleAddTodo(
+					this.input.value,
+					() => this.input.value = ''
+				))
 			};
 			removeItem = (todo) => {
 				this.props.store.dispatch(handleDeleteTodo(todo))
 			}
 			toggleItem = (todo) => {
-				this.props.store.dispatch(toggleTodo(todo.id))
-				return API.saveTodoToggle(todo.id)
-					.catch(() => {
-						this.props.store.dispatch(toggleTodo(todo.id))
-						alert('An Error Occurred, Try Again Later')
-					})
+				this.props.store.dispatch(handleToggleTodo(todo.id))
 			}
 
 			render() {
@@ -217,21 +269,14 @@
 			addItem = (e) => {
 				e.preventDefault()
 
-				return API.saveGoal(this.input.value)
-					.then((goal) => {
-						this.props.store.dispatch(addGoal(goal))
-						this.input.value = ''
-					})
-					.catch(() => alert('An Error Occurred, Try Again Later'))
+				this.props.store.dispatch(handleAddGoal(
+					this.input.value,
+					() => this.input.value = ''
+				))
 			}
 
 			removeItem = (goal) => {
-				this.props.store.dispatch(removeGoal(goal.id))
-				return API.deleteGoal(goal.id)
-					.catch(() => {
-						this.props.store.dispatch(addGoal(goal))
-						alert('An Error Occurred, Try Again Later')
-					})
+				this.props.store.dispatch(handleRemoveGoal(goal))
 			}
 
 			render() {
@@ -263,15 +308,7 @@
 			componentDidMount() {
 				const { store } = this.props;
 
-				// Fetch Data From Remote API
-				Promise.all([
-					API.fetchTodos(),
-					API.fetchGoals(),
-				]).then(([todos, goals]) => {
-					console.log('todos', todos);
-					console.log('goals', goals);
-					store.dispatch(receiveData(todos, goals))
-				})
+				store.dispatch(handleInitialData())
 
 				store.subscribe(() => this.forceUpdate());
 			}
