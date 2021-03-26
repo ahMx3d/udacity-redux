@@ -1,0 +1,2 @@
+export const ADD_GOAL = 'ADD_GOAL',
+	REMOVE_GOAL = 'REMOVE_GOAL';
